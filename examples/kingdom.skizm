@@ -55,7 +55,6 @@ end
 
 method main do
     var k = Kingdom new
-    k init
     var playing = true
     
     while playing do

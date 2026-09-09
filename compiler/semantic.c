@@ -66,14 +66,6 @@ static ClassDef *find_class(Semantic *s, const char *name) {
     return NULL;
 }
 
-static int class_has_field(ClassDef *cls, const char *name) {
-    if (!cls) return 0;
-    for (int i = 0; i < cls->field_count; i++) {
-        if (strcmp(cls->fields[i], name) == 0) return 1;
-    }
-    return 0;
-}
-
 static void clear_locals(Semantic *s) {
     for (int i = 0; i < s->local_count; i++) {
         free(s->locals[i]);
@@ -118,20 +110,14 @@ static void validate_expr(Semantic *s, Expr *expr) {
             break;
 
         case EXPR_GET_FIELD:
+            /* Messages-only state: any field access desugars to a message
+               send, so there is nothing to check against self here. */
             validate_expr(s, expr->as.get_field.object);
-            if (expr->as.get_field.object->type == EXPR_SELF &&
-                !class_has_field(s->current_class, expr->as.get_field.field_name)) {
-                semantic_errorf(s, expr->line, "Unknown field '%s' on self.", expr->as.get_field.field_name);
-            }
             break;
 
         case EXPR_SET_FIELD:
             validate_expr(s, expr->as.set_field.object);
             validate_expr(s, expr->as.set_field.value);
-            if (expr->as.set_field.object->type == EXPR_SELF &&
-                !class_has_field(s->current_class, expr->as.set_field.field_name)) {
-                semantic_errorf(s, expr->line, "Unknown field '%s' on self.", expr->as.set_field.field_name);
-            }
             break;
 
         case EXPR_NEW:

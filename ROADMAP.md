@@ -2,6 +2,16 @@
 
 Skizm is for building small indie games first. Treat every language and runtime choice as serving that goal.
 
+## Locked decisions
+
+- One rule for state: field access is always a message send, with
+  auto-generated accessors per `var`. No typed fields, no second rule.
+- Construction is `new` + zero-arg `init`. No keyword allocation.
+- No blocks or closures: `if`/`while` are statements; higher-order
+  collection messages wait until blocks exist, if they ever do.
+- Standard library as library objects (`lib/`), never new syntax.
+- macOS and Linux build clean from the same script; CI runs both.
+
 ## Current Direction
 
 - Keep the language small, readable, and game-oriented.
@@ -31,5 +41,6 @@ Skizm is for building small indie games first. Treat every language and runtime 
 
 - Expand automated example tests so regressions are obvious.
 - Add source locations to runtime diagnostics so dynamic object mistakes point back to the `.skizm` line.
-- Decide whether object fields are dynamic by name or statically known by type.
+- Object field semantics are settled (messages-only); the remaining question
+  is what the game loop and input API look like.
 - Add useful game primitives before advanced language features.

@@ -101,12 +101,11 @@ Object *send0(Object *receiver, SelectorID selector);
 /* Convenience: send with one argument */
 Object *send1(Object *receiver, SelectorID selector, Object *arg);
 
+/* True when the class defines a method for the selector (no diagnostics). */
+int class_responds_to(ClassID class_id, SelectorID selector);
+
 /* Convenience: send with two arguments */
 Object *send2(Object *receiver, SelectorID selector, Object *arg1, Object *arg2);
-
-/* Runtime field lookup for cross-object access when the compiler does not know the class. */
-Object *obj_get_named_field(Object *instance, const char *field_name);
-void obj_set_named_field(Object *instance, const char *field_name, Object *value);
 
 
 /* =========================================================================

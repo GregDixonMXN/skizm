@@ -1,0 +1,26 @@
+-- state_messages.skizm - Object state is only reachable via messages.
+-- Every var gets an auto-generated getter (arity 0) and setter
+-- ('name:', arity 1, answers nil). Reads and writes below all go
+-- through message sends, including cross-object access.
+
+class Counter
+    var count
+
+    method init do
+        self.count = 0
+    end
+end
+
+method main do
+    var c = Counter new
+    c count print
+    var r = c count: 5
+    r print
+    c count: 41
+    (c count) + 1 print
+    var d = Counter new
+    d count: (c count) + 100
+    d count print
+    c count: (d count)
+    c count print
+end

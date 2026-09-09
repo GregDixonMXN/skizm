@@ -42,10 +42,24 @@ end
 ## Status
 
 Compiler pipeline, runtime, and diagnostics are in place with a green test
-suite. Next up per the roadmap: settling object field semantics, a small game
-standard library (vectors, timers, input, scenes, save data), an
-init/update/draw game loop, terminal-first rendering, and only then a minimal
-editor. See `ROADMAP.md` for details.
+suite (`./build.sh test` runs on macOS and Linux via CI). Next up per the
+roadmap: a small game standard library, an init/update/draw game loop,
+terminal-first rendering, and only then a minimal editor. See `ROADMAP.md`
+for details.
+
+## Language decisions (locked)
+
+- One rule for state: every `obj.field` read is the message `obj field` and
+  every `obj.field = v` write is the message `obj field: v`. Each `var`
+  auto-generates those accessors (override them with your own methods);
+  there is no direct field access and no second rule.
+- Construction is `Class new`, which allocates then calls zero-arg `init`
+  when defined. Put starting values in `init`, not in main.
+- `if`/`while` with `do`/`end` are statements. There are no blocks or
+  closures; game logic that needs callbacks polls instead (see `lib/timer.skizm`).
+- The standard library is library objects, not syntax: `lib/` holds `Vector`
+  and `Timer`, compiled alongside your program
+  (`skizmc lib/vector.skizm lib/timer.skizm game.skizm -o game.c`).
 
 ## License
 

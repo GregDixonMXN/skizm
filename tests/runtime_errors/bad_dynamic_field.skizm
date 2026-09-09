@@ -1,8 +1,0 @@
-class Player
-    var health
-end
-
-method main do
-    var p = Player new
-    p.heath
-end

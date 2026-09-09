@@ -126,6 +126,10 @@ static MethodFunc find_method(ClassID class_id, SelectorID selector) {
     return NULL;
 }
 
+int class_responds_to(ClassID class_id, SelectorID selector) {
+    return find_method(class_id, selector) != NULL;
+}
+
 static int find_method_arity(ClassID class_id, SelectorID selector) {
     if (class_id >= g_classes.count) return -1;
     ClassDef *def = &g_classes.classes[class_id];
@@ -214,50 +218,6 @@ Object *send0(Object *receiver, SelectorID selector) { return send(receiver, sel
 Object *send1(Object *receiver, SelectorID selector, Object *arg) { Object *args[1] = { arg }; return send(receiver, selector, args, 1); }
 Object *send2(Object *receiver, SelectorID selector, Object *arg1, Object *arg2) { Object *args[2] = { arg1, arg2 }; return send(receiver, selector, args, 2); }
 
-Object *obj_get_named_field(Object *instance, const char *field_name) {
-    if (!is_heap_object(instance) || instance->type != TYPE_OBJECT) {
-        fprintf(stderr, "Cannot get field '%s' on non-object\n", field_name);
-        return obj_nil();
-    }
-    int field_index = class_find_field(instance->class_id, field_name);
-    if (field_index < 0) {
-        fprintf(stderr, "No field '%s' for class '%s'", field_name, class_name(instance->class_id));
-        uint32_t count = class_field_count(instance->class_id);
-        if (count > 0) {
-            fprintf(stderr, ". Available fields:");
-            ClassDef *def = &g_classes.classes[instance->class_id];
-            for (uint32_t i = 0; i < count && i < MAX_FIELDS_PER_CLASS; i++) {
-                if (def->field_names[i]) fprintf(stderr, " %s", def->field_names[i]);
-            }
-        }
-        fprintf(stderr, "\n");
-        return obj_nil();
-    }
-    return obj_get_field(instance, (uint32_t)field_index);
-}
-
-void obj_set_named_field(Object *instance, const char *field_name, Object *value) {
-    if (!is_heap_object(instance) || instance->type != TYPE_OBJECT) {
-        fprintf(stderr, "Cannot set field '%s' on non-object\n", field_name);
-        return;
-    }
-    int field_index = class_find_field(instance->class_id, field_name);
-    if (field_index < 0) {
-        fprintf(stderr, "No field '%s' for class '%s'", field_name, class_name(instance->class_id));
-        uint32_t count = class_field_count(instance->class_id);
-        if (count > 0) {
-            fprintf(stderr, ". Available fields:");
-            ClassDef *def = &g_classes.classes[instance->class_id];
-            for (uint32_t i = 0; i < count && i < MAX_FIELDS_PER_CLASS; i++) {
-                if (def->field_names[i]) fprintf(stderr, " %s", def->field_names[i]);
-            }
-        }
-        fprintf(stderr, "\n");
-        return;
-    }
-    obj_set_field(instance, (uint32_t)field_index, value);
-}
-
 static Object *int_plus(Object *self, Object **args, int argc) { if (argc < 1) return self; return obj_int(obj_as_int(self) + obj_as_int(args[0])); }
 static Object *int_minus(Object *self, Object **args, int argc) { if (argc < 1) return self; return obj_int(obj_as_int(self) - obj_as_int(args[0])); }
 static Object *int_times(Object *self, Object **args, int argc) { if (argc < 1) return self; return obj_int(obj_as_int(self) * obj_as_int(args[0])); }
@@ -269,6 +229,7 @@ static Object *int_le(Object *self, Object **args, int argc) { if (argc < 1) ret
 static Object *int_ge(Object *self, Object **args, int argc) { if (argc < 1) return obj_bool(false); return obj_bool(obj_as_int(self) >= obj_as_int(args[0])); }
 static Object *int_to_string(Object *self, Object **args, int argc) { (void)args; (void)argc; return obj_to_string(self); }
 static Object *int_print(Object *self, Object **args, int argc) { (void)args; (void)argc; obj_print(self); printf("\n"); return self; }
+static Object *nil_print(Object *self, Object **args, int argc) { (void)self; (void)args; (void)argc; printf("nil\n"); return obj_nil(); }
 
 static Object *bool_do(Object *self, Object **args, int argc) { (void)args; (void)argc; return obj_bool(obj_as_bool(self)); }
 static Object *bool_else(Object *self, Object **args, int argc) { (void)args; (void)argc; return obj_bool(!obj_as_bool(self)); }
@@ -287,6 +248,7 @@ static Object *array_at(Object *self, Object **args, int argc) { if (argc < 1) r
 static Object *system_input(Object *self, Object **args, int argc) { (void)self; (void)args; (void)argc; char buffer[1024]; printf("> "); fflush(stdout); if (fgets(buffer, sizeof(buffer), stdin)) { size_t len = strlen(buffer); while (len > 0 && (buffer[len - 1] == '\n' || buffer[len - 1] == '\r')) { buffer[len - 1] = '\0'; len--; } return obj_string(buffer, (uint32_t)len); } return obj_nil(); }
 static Object *system_clear(Object *self, Object **args, int argc) { (void)self; (void)args; (void)argc; printf("\033[H\033[2J"); return obj_nil(); }
 static Object *system_random(Object *self, Object **args, int argc) { (void)self; if (argc < 2) return obj_int(0); int64_t min = obj_as_int(args[0]); int64_t max = obj_as_int(args[1]); if (max <= min) return obj_int(min); return obj_int(min + (rand() % (max - min + 1))); }
+static Object *system_time(Object *self, Object **args, int argc) { (void)self; (void)args; (void)argc; return obj_int((int64_t)time(NULL)); }
 
 void dispatch_init(void) {
     SEL_NEW = selector_intern("new"); SEL_INIT = selector_intern("init"); SEL_DO = selector_intern("do"); SEL_ELSE = selector_intern("else");
@@ -299,7 +261,8 @@ void dispatch_init(void) {
 
 void register_builtins(void) {
     /* FIX: Force 'Nil' to take ID 0 so integers aren't accidentally treated as nil */
-    class_register("Nil", 0);
+    ClassID nil_id = class_register("Nil", 0);
+    class_add_method(nil_id, SEL_PRINT, nil_print);
     
     CLASS_INT_ID = class_register("Integer", 0);
     CLASS_BOOL_ID = class_register("Boolean", 0);
@@ -316,4 +279,5 @@ void register_builtins(void) {
     class_add_method(CLASS_ARRAY_ID, selector_intern("at:"), array_at);
     
     class_add_method(CLASS_SYSTEM_ID, SEL_INPUT, system_input); class_add_method(CLASS_SYSTEM_ID, SEL_CLEAR, system_clear); class_add_method(CLASS_SYSTEM_ID, SEL_RANDOM, system_random);
+    class_add_method(CLASS_SYSTEM_ID, selector_intern("time"), system_time);
 }

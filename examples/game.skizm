@@ -5,25 +5,31 @@ class Player
     var health
     var name
     var gold
-    
+
+    method init do
+        self.health = 100
+        self.name = "Adventurer"
+        self.gold = 0
+    end
+
     method take_damage: amount do
         self.health = self.health - amount
         self.health print
-        
+
         if self.health <= 0 do
             self die
         end
     end
-    
+
     method die do
         "You have fallen..." print
     end
-    
+
     method heal: amount do
         self.health = self.health + amount
         "Healed!" print
     end
-    
+
     method collect_gold: amount do
         self.gold = self.gold + amount
     end
@@ -33,13 +39,19 @@ class Monster
     var health
     var damage
     var name
-    
+
+    method init do
+        self.health = 30
+        self.damage = 15
+        self.name = "Goblin"
+    end
+
     method attack: target do
         self.name print
         " attacks!" print
         target take_damage: self.damage
     end
-    
+
     method is_alive do
         return self.health > 0
     end
@@ -47,46 +59,40 @@ end
 
 method main do
     "=== Welcome to the Dungeon ===" print
-    
-    -- Create our hero
+
+    -- Create our hero (init sets health, name, gold)
     var hero = Player new
-    hero.health = 100
-    hero.name = "Adventurer"
-    hero.gold = 0
-    
+
     "Your hero enters the dungeon with " print
-    hero.health print
+    hero health print
     " HP" print
-    
-    -- Create a monster
+
+    -- Create a monster (init sets health, damage, name)
     var goblin = Monster new
-    goblin.health = 30
-    goblin.damage = 15
-    goblin.name = "Goblin"
-    
+
     -- Combat!
     "A wild Goblin appears!" print
-    
+
     goblin attack: hero
     "Hero HP: " print
-    hero.health print
-    
+    hero health print
+
     goblin attack: hero
     "Hero HP: " print
-    hero.health print
-    
+    hero health print
+
     -- Heal up
     hero heal: 20
     "Hero HP after healing: " print
-    hero.health print
-    
+    hero health print
+
     -- More combat
     goblin attack: hero
     goblin attack: hero
     goblin attack: hero
-    
+
     "Final HP: " print
-    hero.health print
-    
+    hero health print
+
     "=== Game Over ===" print
 end

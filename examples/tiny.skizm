@@ -2,9 +2,13 @@
 
 class Box
     var value
+
+    method init do
+        self.value = 42
+    end
 end
 
 method main do
     var b = Box new
-    b.value = 42
+    b value print
 end

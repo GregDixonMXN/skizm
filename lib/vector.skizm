@@ -1,0 +1,31 @@
+-- vector.skizm - 2D integer vectors for game math (stdlib, not syntax).
+-- Method names are plain Smalltalk-style selectors: operator
+-- characters cannot be method names, so add/sub are named methods.
+
+class Vector
+    var x
+    var y
+
+    method init do
+        self.x = 0
+        self.y = 0
+    end
+
+    method add: other do
+        var r = Vector new
+        r.x = self.x + other.x
+        r.y = self.y + other.y
+        return r
+    end
+
+    method sub: other do
+        var r = Vector new
+        r.x = self.x - other.x
+        r.y = self.y - other.y
+        return r
+    end
+
+    method magnitude_squared do
+        return self.x * self.x + self.y * self.y
+    end
+end

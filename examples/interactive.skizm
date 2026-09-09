@@ -1,24 +1,28 @@
 class Game
     var running
-    
+
+    method init do
+        self.running = false
+    end
+
     method start do
         self.running = true
         "--- TEXT ROGUELIKE v0.1 ---" print
         "Commands: quit, attack, heal" print
-        
+
         while self.running do
             var cmd = System input
-            
+
             if cmd == "quit" do
                 self.running = false
                 "Goodbye!" print
             end
-            
+
             if cmd == "attack" do
                 "You swing your sword!" print
                 "Critical hit! (1000 tagged pointer damage)" print
             end
-            
+
             if cmd == "heal" do
                 "You drink a potion." print
             end

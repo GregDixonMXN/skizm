@@ -23,8 +23,8 @@ NC='\033[0m'
 echo "=== Skizm Build System ==="
 echo
 
-# Compiler settings for macOS
-CC="clang"
+# Compiler settings (portable: macOS and Linux, clang or gcc)
+CC="${CC:-cc}"
 CFLAGS="-Wall -Wextra -std=c11 -O2"
 
 # Directories
@@ -147,6 +147,28 @@ run_string_test() {
     echo "String escaping test passed."
 }
 
+run_state_test() {
+    echo "Running messages-only state test..."
+    compile_yl tests/state_messages.skizm state_messages
+    "$BUILD_DIR/state_messages" > "$BUILD_DIR/state_messages.out"
+    diff -u tests/state_messages.expected "$BUILD_DIR/state_messages.out"
+    echo "Messages-only state test passed."
+}
+
+run_lib_test() {
+    echo "Running Vector/Timer library test..."
+    "$BUILD_DIR/skizmc" lib/vector.skizm lib/timer.skizm tests/lib_usage.skizm -o "$BUILD_DIR/lib_usage.c"
+    $CC $CFLAGS -I"$RUNTIME_DIR" "$BUILD_DIR/lib_usage.c" \
+        "$BUILD_DIR/arena.o" \
+        "$BUILD_DIR/object.o" \
+        "$BUILD_DIR/dispatch.o" \
+        "$BUILD_DIR/runtime.o" \
+        -o "$BUILD_DIR/lib_usage"
+    "$BUILD_DIR/lib_usage" > "$BUILD_DIR/lib_usage.out"
+    diff -u tests/lib_usage.expected "$BUILD_DIR/lib_usage.out"
+    echo "Vector/Timer library test passed."
+}
+
 run_error_test() {
     local source="$1"
     local expected="$2"
@@ -168,7 +190,6 @@ run_error_tests() {
     run_error_test tests/errors/bad_keyword_arg.skizm tests/errors/bad_keyword_arg.expected
     run_error_test tests/errors/missing_method_end.skizm tests/errors/missing_method_end.expected
     run_error_test tests/errors/unknown_variable.skizm tests/errors/unknown_variable.expected
-    run_error_test tests/errors/unknown_self_field.skizm tests/errors/unknown_self_field.expected
     echo "Compiler error diagnostic tests passed."
 }
 
@@ -185,7 +206,6 @@ run_runtime_diagnostic_test() {
 
 run_runtime_diagnostic_tests() {
     echo "Running runtime diagnostic tests..."
-    run_runtime_diagnostic_test tests/runtime_errors/bad_dynamic_field.skizm tests/runtime_errors/bad_dynamic_field.expected
     run_runtime_diagnostic_test tests/runtime_errors/bad_method_arity.skizm tests/runtime_errors/bad_method_arity.expected
     run_runtime_diagnostic_test tests/runtime_errors/bad_system_arity.skizm tests/runtime_errors/bad_system_arity.expected
     echo "Runtime diagnostic tests passed."
@@ -201,6 +221,10 @@ case "${1:-build}" in
         run_parser_test
         echo
         run_string_test
+        echo
+        run_state_test
+        echo
+        run_lib_test
         echo
         run_error_tests
         echo

@@ -1,0 +1,25 @@
+-- timer.skizm - Polling timer built on System time (stdlib, not syntax).
+-- System time answers Unix seconds as an integer. Elapsed math is
+-- plain integer subtraction, so output stays deterministic.
+
+class Timer
+    var start
+    var mark
+
+    method init do
+        self.start = System time
+        self.mark = System time
+    end
+
+    method reset do
+        self.mark = System time
+    end
+
+    method elapsed do
+        return (System time) - self.mark
+    end
+
+    method total do
+        return (System time) - self.start
+    end
+end

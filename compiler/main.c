@@ -40,7 +40,7 @@ static char *read_file(const char *path) {
 }
 
 static void print_usage(const char *prog) {
-    fprintf(stderr, "Usage: %s <source.skizm> [-o output.c]\n", prog);
+    fprintf(stderr, "Usage: %s <source.skizm> [more.skizm ...] [-o output.c]\n", prog);
     fprintf(stderr, "       %s --tokens <source.skizm>   (show tokens)\n", prog);
     fprintf(stderr, "       %s --ast <source.skizm>      (show AST)\n", prog);
 }
@@ -62,11 +62,12 @@ int main(int argc, char **argv) {
         return 1;
     }
     
-    const char *source_path = NULL;
+    const char *source_paths[1024];
+    int source_count = 0;
     const char *output_path = NULL;
     int show_tokens_flag = 0;
     int show_ast_flag = 0;
-    
+
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--tokens") == 0) {
             show_tokens_flag = 1;
@@ -80,18 +81,47 @@ int main(int argc, char **argv) {
                 return 1;
             }
         } else if (argv[i][0] != '-') {
-            source_path = argv[i];
+            if (source_count >= (int)(sizeof(source_paths) / sizeof(source_paths[0]))) {
+                fprintf(stderr, "Too many source files\n");
+                return 1;
+            }
+            source_paths[source_count++] = argv[i];
         }
     }
-    
-    if (!source_path) {
+
+    if (source_count == 0) {
         fprintf(stderr, "No source file specified\n");
         print_usage(argv[0]);
         return 1;
     }
-    
-    char *source = read_file(source_path);
-    if (!source) return 1;
+
+    /* Multi-file compilation: every source is concatenated in order.
+       A single source behaves exactly as before. */
+    char *source = NULL;
+    size_t source_len = 0;
+    for (int i = 0; i < source_count; i++) {
+        char *chunk = read_file(source_paths[i]);
+        if (!chunk) {
+            free(source);
+            return 1;
+        }
+        size_t chunk_len = strlen(chunk);
+        char *joined = realloc(source, source_len + chunk_len + 2);
+        if (!joined) {
+            fprintf(stderr, "Not enough memory to read '%s'\n", source_paths[i]);
+            free(chunk);
+            free(source);
+            return 1;
+        }
+        source = joined;
+        memcpy(source + source_len, chunk, chunk_len);
+        source_len += chunk_len;
+        /* Single files compile byte-identical to before: the newline is
+           only a separator between sources, never a suffix. */
+        if (i + 1 < source_count) source[source_len++] = '\n';
+        source[source_len] = '\0';
+        free(chunk);
+    }
     
     /* Show tokens mode */
     if (show_tokens_flag) {

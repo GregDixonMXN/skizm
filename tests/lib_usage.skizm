@@ -1,0 +1,24 @@
+-- lib_usage.skizm - Exercise the Vector/Timer library files compiled
+-- alongside this test. Timer assertions compare, never print, raw
+-- clock values so the output is fully deterministic.
+
+method main do
+    var a = Vector new
+    a x: 3
+    a y: 4
+    var b = Vector new
+    b x: 1
+    b y: 1
+    var c = a add: b
+    c.x print
+    c.y print
+    var d = a sub: b
+    d.x print
+    d.y print
+    a magnitude_squared print
+    var t = Timer new
+    t reset
+    (t elapsed) >= 0 print
+    (t total) >= 0 print
+    (System time) > 0 print
+end

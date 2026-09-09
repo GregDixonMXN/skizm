@@ -67,12 +67,11 @@ static char *to_upper(const char *name) {
     return result;
 }
 
-static int find_field(CodeGen *g, const char *name) {
-    if (!g->current_class) return -1;
-    for (int i = 0; i < g->current_class->field_count; i++) {
-        if (strcmp(g->current_class->fields[i], name) == 0) return i;
+static int class_defines_method(ClassDef *cls, const char *selector) {
+    for (int i = 0; i < cls->method_count; i++) {
+        if (strcmp(cls->methods[i]->name, selector) == 0) return 1;
     }
-    return -1;
+    return 0;
 }
 
 static int is_local(CodeGen *g, const char *name) {
@@ -248,40 +247,19 @@ static void gen_expr(CodeGen *g, Expr *e) {
         }
         
         case EXPR_GET_FIELD: {
-            if (e->as.get_field.object->type == EXPR_SELF && g->current_class) {
-                int idx = find_field(g, e->as.get_field.field_name);
-                if (idx >= 0) {
-                    char *upper = to_upper(g->current_class->name);
-                    char *fupper = to_upper(e->as.get_field.field_name);
-                    emit(g, "obj_get_field(self, %s_FIELD_%s)", upper, fupper);
-                    free(upper);
-                    free(fupper);
-                    return;
-                }
-            }
-            emit(g, "obj_get_named_field(");
+            /* Messages-only state: obj.field desugars to send0(obj, 'field'). */
+            emit(g, "send0(");
             gen_expr(g, e->as.get_field.object);
-            emit(g, ", \"%s\")", e->as.get_field.field_name);
+            emit(g, ", selector_intern(\"%s\"))", e->as.get_field.field_name);
             break;
         }
-        
+
         case EXPR_SET_FIELD: {
-            if (e->as.set_field.object->type == EXPR_SELF && g->current_class) {
-                int idx = find_field(g, e->as.set_field.field_name);
-                if (idx >= 0) {
-                    char *upper = to_upper(g->current_class->name);
-                    char *fupper = to_upper(e->as.set_field.field_name);
-                    emit(g, "(obj_set_field(self, %s_FIELD_%s, ", upper, fupper);
-                    gen_expr(g, e->as.set_field.value);
-                    emit(g, "), obj_nil())");
-                    free(upper);
-                    free(fupper);
-                    return;
-                }
-            }
-            emit(g, "(obj_set_named_field(");
+            /* Messages-only state: obj.field = v desugars to
+               send1(obj, 'field:', v) and still evaluates to nil. */
+            emit(g, "(send1(");
             gen_expr(g, e->as.set_field.object);
-            emit(g, ", \"%s\", ", e->as.set_field.field_name);
+            emit(g, ", selector_intern(\"%s:\"), ", e->as.set_field.field_name);
             gen_expr(g, e->as.set_field.value);
             emit(g, "), obj_nil())");
             break;
@@ -423,13 +401,10 @@ static void gen_class(CodeGen *g, ClassDef *cls) {
     
     g->current_class = cls;
     
-    /* Field indices */
-    emit(g, "/* ========== Class: %s ========== */\n", cls->name);
-    for (int i = 0; i < cls->field_count; i++) {
-        char *fupper = to_upper(cls->fields[i]);
-        emit(g, "#define %s_FIELD_%s %d\n", upper, fupper, i);
-        free(fupper);
-    }
+    /* Field indices. (Per-field macros are intentionally not emitted: a
+       field literally named e.g. `count` would collide with the
+       `%s_FIELD_COUNT` macro below. Generated accessors use literal
+       indices instead.) */
     emit(g, "#define %s_FIELD_COUNT %d\n", upper, cls->field_count);
     emit(g, "static ClassID CLASS_%s;\n", upper);
     
@@ -463,10 +438,45 @@ static void gen_class(CodeGen *g, ClassDef *cls) {
         free(mname);
     }
     
-    /* Constructor */
+    /* Auto-generated field accessors (messages-only state).
+       Every var gets a getter (arity 0, indexed read) and a setter
+       ('name:', arity 1, indexed write returning nil), unless the class
+       defines that method explicitly. */
+    for (int i = 0; i < cls->field_count; i++) {
+        const char *field = cls->fields[i];
+        char *cfield = to_c_name(field);
+        size_t setter_len = strlen(field) + 2;
+        char *setter = malloc(setter_len);
+        snprintf(setter, setter_len, "%s:", field);
+
+        if (!class_defines_method(cls, field)) {
+            emit(g, "static Object *%s_auto_get_%s(Object *self, Object **args, int argc) {\n",
+                 cname, cfield);
+            emit(g, "    (void)args; (void)argc;\n");
+            emit(g, "    return obj_get_field(self, %d);\n", i);
+            emit(g, "}\n\n");
+        }
+        if (!class_defines_method(cls, setter)) {
+            emit(g, "static Object *%s_auto_set_%s(Object *self, Object **args, int argc) {\n",
+                 cname, cfield);
+            emit(g, "    (void)argc;\n");
+            emit(g, "    if (argc < 1) return obj_nil();\n");
+            emit(g, "    obj_set_field(self, %d, args[0]);\n", i);
+            emit(g, "    return obj_nil();\n");
+            emit(g, "}\n\n");
+        }
+        free(setter);
+        free(cfield);
+    }
+
+    /* Constructor: allocate, then call zero-arg 'init' when defined.
+       class_responds_to checks quietly, so classes without 'init'
+       never hit the 'No method' diagnostic path. */
     emit(g, "static Object *%s_new(Object *self, Object **args, int argc) {\n", cname);
     emit(g, "    (void)self; (void)args; (void)argc;\n");
-    emit(g, "    return obj_instance(CLASS_%s, %s_FIELD_COUNT);\n", upper, upper);
+    emit(g, "    Object *obj = obj_instance(CLASS_%s, %s_FIELD_COUNT);\n", upper, upper);
+    emit(g, "    if (class_responds_to(CLASS_%s, SEL_INIT)) send0(obj, SEL_INIT);\n", upper);
+    emit(g, "    return obj;\n");
     emit(g, "}\n\n");
     
     /* Registration */
@@ -491,6 +501,23 @@ static void gen_class(CodeGen *g, ClassDef *cls) {
              upper, upper, mupper, cname, mname, cls->methods[i]->param_count);
         free(mname);
         free(mupper);
+    }
+    for (int i = 0; i < cls->field_count; i++) {
+        const char *field = cls->fields[i];
+        char *cfield = to_c_name(field);
+        size_t setter_len = strlen(field) + 2;
+        char *setter = malloc(setter_len);
+        snprintf(setter, setter_len, "%s:", field);
+        if (!class_defines_method(cls, field)) {
+            emit(g, "    class_add_method_arity(CLASS_%s, selector_intern(\"%s\"), %s_auto_get_%s, 0);\n",
+                 upper, field, cname, cfield);
+        }
+        if (!class_defines_method(cls, setter)) {
+            emit(g, "    class_add_method_arity(CLASS_%s, selector_intern(\"%s\"), %s_auto_set_%s, 1);\n",
+                 upper, setter, cname, cfield);
+        }
+        free(setter);
+        free(cfield);
     }
     emit(g, "}\n\n");
     
@@ -518,6 +545,15 @@ void codegen_generate(Program *prog, FILE *out) {
     emit(&g, "/* Generated by the Skizm Compiler */\n");
     emit(&g, "#include \"runtime.h\"\n");
     emit(&g, "#include <stdio.h>\n\n");
+
+    /* Forward declarations of constructors: methods in any class may call
+       `new` on any class, including ones defined later in the file. */
+    for (int i = 0; i < prog->class_count; i++) {
+        char *cname = to_c_name(prog->classes[i]->name);
+        emit(&g, "static Object *%s_new(Object *self, Object **args, int argc);\n", cname);
+        free(cname);
+    }
+    emit(&g, "\n");
     
     /* Generate classes */
     for (int i = 0; i < prog->class_count; i++) {
