@@ -115,7 +115,7 @@ static void register_player_class(void) {
  * ========================================================================= */
 
 int main(void) {
-    printf("=== Sprite Runtime Test ===\n\n");
+    printf("=== Skizm Runtime Test ===\n\n");
     
     /* Initialize runtime with 1MB arena */
     runtime_init(1024 * 1024);

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# build.sh - One-click build for Sprite (macOS compatible)
+# build.sh - One-click build for Skizm (macOS compatible)
 #
 # Usage:
 #   ./build.sh           Build everything
@@ -20,7 +20,7 @@ YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-echo "=== Sprite Build System ==="
+echo "=== Skizm Build System ==="
 echo
 
 # Compiler settings for macOS
@@ -98,8 +98,8 @@ $CC $CFLAGS \
     "$BUILD_DIR/codegen.o" \
     "$BUILD_DIR/semantic.o" \
     "$BUILD_DIR/main.o" \
-    -o "$BUILD_DIR/spritec"
-echo "  ✓ spritec (Sprite Compiler)"
+    -o "$BUILD_DIR/skizmc"
+echo "  ✓ skizmc (Skizm Compiler)"
 
 # ============ Build Test ============
 # Link directly with object files instead of static library (more reliable on macOS)
@@ -116,14 +116,14 @@ echo "  ✓ test_runtime"
 echo
 echo "Build complete!"
 echo
-echo "  Compiler: $BUILD_DIR/spritec"
+echo "  Compiler: $BUILD_DIR/skizmc"
 echo "  Runtime:  $BUILD_DIR/libruntime.a"
 echo
 
 compile_yl() {
     local source="$1"
     local output="$2"
-    "$BUILD_DIR/spritec" "$source" -o "$BUILD_DIR/$output.c"
+    "$BUILD_DIR/skizmc" "$source" -o "$BUILD_DIR/$output.c"
     $CC $CFLAGS -I"$RUNTIME_DIR" "$BUILD_DIR/$output.c" \
         "$BUILD_DIR/arena.o" \
         "$BUILD_DIR/object.o" \
@@ -134,7 +134,7 @@ compile_yl() {
 
 run_parser_test() {
     echo "Running parser precedence test..."
-    "$BUILD_DIR/spritec" --ast tests/parser_precedence.yl > "$BUILD_DIR/parser_precedence.ast"
+    "$BUILD_DIR/skizmc" --ast tests/parser_precedence.yl > "$BUILD_DIR/parser_precedence.ast"
     diff -u tests/parser_precedence.expected "$BUILD_DIR/parser_precedence.ast"
     echo "Parser precedence test passed."
 }
@@ -153,7 +153,7 @@ run_error_test() {
     local name
     name=$(basename "$source" .yl)
 
-    if "$BUILD_DIR/spritec" "$source" -o "$BUILD_DIR/$name.c" > "$BUILD_DIR/$name.stdout" 2> "$BUILD_DIR/$name.stderr"; then
+    if "$BUILD_DIR/skizmc" "$source" -o "$BUILD_DIR/$name.c" > "$BUILD_DIR/$name.stdout" 2> "$BUILD_DIR/$name.stderr"; then
         echo "Expected $source to fail, but it compiled."
         exit 1
     fi

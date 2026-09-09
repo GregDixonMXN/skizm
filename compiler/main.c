@@ -1,7 +1,7 @@
 /*
- * main.c - Sprite Compiler
+ * main.c - Skizm Compiler
  * 
- * Usage: ./spritec source.yl -o output.c
+ * Usage: ./skizmc source.yl -o output.c
  * 
  * Reads your Lua-inspired code, parses it, and generates C.
  */

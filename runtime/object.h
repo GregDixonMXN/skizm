@@ -3,7 +3,7 @@
  * 
  * Philosophy: "Everything is an Object."
  * 
- * Every value in Sprite—integers, booleans, strings, players, 
+ * Every value in Skizm—integers, booleans, strings, players, 
  * game loops—is represented by this single type. Objects receive messages.
  * 
  * Implementation Strategy:

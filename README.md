@@ -1,8 +1,8 @@
-# Sprite
+# Skizm
 
 A small, readable programming language for building indie games — a lightweight,
 Unity-like workflow without the editor/runtime bloat. Write game logic in `.yl`
-files with clean Smalltalk-style syntax; the Sprite compiler translates them to
+files with clean Smalltalk-style syntax; the Skizm compiler translates them to
 C, which builds against a tiny object runtime.
 
 ```yl

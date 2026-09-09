@@ -1,5 +1,5 @@
 -- game.yl - A Simple Roguelike Demo
--- This is Sprite. Clean. Readable. Powerful.
+-- This is Skizm. Clean. Readable. Powerful.
 
 class Player
     var health
