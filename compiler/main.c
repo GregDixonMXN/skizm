@@ -1,7 +1,7 @@
 /*
  * main.c - Skizm Compiler
  * 
- * Usage: ./skizmc source.szm -o output.c
+ * Usage: ./skizmc source.skizm -o output.c
  * 
  * Reads your Lua-inspired code, parses it, and generates C.
  */
@@ -40,9 +40,9 @@ static char *read_file(const char *path) {
 }
 
 static void print_usage(const char *prog) {
-    fprintf(stderr, "Usage: %s <source.szm> [-o output.c]\n", prog);
-    fprintf(stderr, "       %s --tokens <source.szm>   (show tokens)\n", prog);
-    fprintf(stderr, "       %s --ast <source.szm>      (show AST)\n", prog);
+    fprintf(stderr, "Usage: %s <source.skizm> [-o output.c]\n", prog);
+    fprintf(stderr, "       %s --tokens <source.skizm>   (show tokens)\n", prog);
+    fprintf(stderr, "       %s --ast <source.skizm>      (show AST)\n", prog);
 }
 
 static void show_tokens(const char *source) {

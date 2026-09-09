@@ -1,7 +1,7 @@
 # Skizm
 
 A small, readable programming language for building indie games — a lightweight,
-Unity-like workflow without the editor/runtime bloat. Write game logic in `.szm`
+Unity-like workflow without the editor/runtime bloat. Write game logic in `.skizm`
 files with clean Smalltalk-style syntax; the Skizm compiler translates them to
 C, which builds against a tiny object runtime.
 
@@ -28,14 +28,14 @@ end
 ```
 ./build.sh           # build the compiler and runtime
 ./build.sh test      # build + run the full regression suite
-./build.sh compile examples/game.szm   # compile a .szm file to C
+./build.sh compile examples/game.skizm   # compile a .skizm file to C
 ```
 
 ## Layout
 
 - `compiler/` — lexer, parser, semantic checker, and C code generator (C11)
 - `runtime/` — object model, message dispatch, arena memory management
-- `examples/` — sample games: roguelike (`game.szm`), autobattler, kingdom sim
+- `examples/` — sample games: roguelike (`game.skizm`), autobattler, kingdom sim
 - `tests/` — regression tests with expected outputs (parser, errors, diagnostics)
 - `ROADMAP.md` — where the language is headed
 

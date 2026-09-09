@@ -10,7 +10,7 @@
 #   ./build.sh error-test
 #   ./build.sh runtime-diagnostic-test
 #   ./build.sh clean     Remove build artifacts
-#   ./build.sh compile   Compile a .szm file
+#   ./build.sh compile   Compile a .skizm file
 #
 
 set -e  # Exit on error
@@ -134,14 +134,14 @@ compile_yl() {
 
 run_parser_test() {
     echo "Running parser precedence test..."
-    "$BUILD_DIR/skizmc" --ast tests/parser_precedence.szm > "$BUILD_DIR/parser_precedence.ast"
+    "$BUILD_DIR/skizmc" --ast tests/parser_precedence.skizm > "$BUILD_DIR/parser_precedence.ast"
     diff -u tests/parser_precedence.expected "$BUILD_DIR/parser_precedence.ast"
     echo "Parser precedence test passed."
 }
 
 run_string_test() {
     echo "Running string escaping test..."
-    compile_yl tests/string_escaping.szm string_escaping
+    compile_yl tests/string_escaping.skizm string_escaping
     "$BUILD_DIR/string_escaping" > "$BUILD_DIR/string_escaping.out"
     diff -u tests/string_escaping.expected "$BUILD_DIR/string_escaping.out"
     echo "String escaping test passed."
@@ -151,7 +151,7 @@ run_error_test() {
     local source="$1"
     local expected="$2"
     local name
-    name=$(basename "$source" .szm)
+    name=$(basename "$source" .skizm)
 
     if "$BUILD_DIR/skizmc" "$source" -o "$BUILD_DIR/$name.c" > "$BUILD_DIR/$name.stdout" 2> "$BUILD_DIR/$name.stderr"; then
         echo "Expected $source to fail, but it compiled."
@@ -163,12 +163,12 @@ run_error_test() {
 
 run_error_tests() {
     echo "Running compiler error diagnostic tests..."
-    run_error_test tests/errors/bad_field.szm tests/errors/bad_field.expected
-    run_error_test tests/errors/bad_initializer.szm tests/errors/bad_initializer.expected
-    run_error_test tests/errors/bad_keyword_arg.szm tests/errors/bad_keyword_arg.expected
-    run_error_test tests/errors/missing_method_end.szm tests/errors/missing_method_end.expected
-    run_error_test tests/errors/unknown_variable.szm tests/errors/unknown_variable.expected
-    run_error_test tests/errors/unknown_self_field.szm tests/errors/unknown_self_field.expected
+    run_error_test tests/errors/bad_field.skizm tests/errors/bad_field.expected
+    run_error_test tests/errors/bad_initializer.skizm tests/errors/bad_initializer.expected
+    run_error_test tests/errors/bad_keyword_arg.skizm tests/errors/bad_keyword_arg.expected
+    run_error_test tests/errors/missing_method_end.skizm tests/errors/missing_method_end.expected
+    run_error_test tests/errors/unknown_variable.skizm tests/errors/unknown_variable.expected
+    run_error_test tests/errors/unknown_self_field.skizm tests/errors/unknown_self_field.expected
     echo "Compiler error diagnostic tests passed."
 }
 
@@ -176,7 +176,7 @@ run_runtime_diagnostic_test() {
     local source="$1"
     local expected="$2"
     local name
-    name=$(basename "$source" .szm)
+    name=$(basename "$source" .skizm)
 
     compile_yl "$source" "$name"
     "$BUILD_DIR/$name" > "$BUILD_DIR/$name.out" 2>&1
@@ -185,9 +185,9 @@ run_runtime_diagnostic_test() {
 
 run_runtime_diagnostic_tests() {
     echo "Running runtime diagnostic tests..."
-    run_runtime_diagnostic_test tests/runtime_errors/bad_dynamic_field.szm tests/runtime_errors/bad_dynamic_field.expected
-    run_runtime_diagnostic_test tests/runtime_errors/bad_method_arity.szm tests/runtime_errors/bad_method_arity.expected
-    run_runtime_diagnostic_test tests/runtime_errors/bad_system_arity.szm tests/runtime_errors/bad_system_arity.expected
+    run_runtime_diagnostic_test tests/runtime_errors/bad_dynamic_field.skizm tests/runtime_errors/bad_dynamic_field.expected
+    run_runtime_diagnostic_test tests/runtime_errors/bad_method_arity.skizm tests/runtime_errors/bad_method_arity.expected
+    run_runtime_diagnostic_test tests/runtime_errors/bad_system_arity.skizm tests/runtime_errors/bad_system_arity.expected
     echo "Runtime diagnostic tests passed."
 }
 
@@ -225,11 +225,11 @@ case "${1:-build}" in
         
     compile)
         if [ -z "$2" ]; then
-            echo "Usage: ./build.sh compile <source.szm>"
+            echo "Usage: ./build.sh compile <source.skizm>"
             exit 1
         fi
         SOURCE="$2"
-        BASENAME=$(basename "$SOURCE" .szm)
+        BASENAME=$(basename "$SOURCE" .skizm)
         
         echo "Compiling $SOURCE..."
         

@@ -30,6 +30,6 @@ Skizm is for building small indie games first. Treat every language and runtime 
 ## Near-Term Priorities
 
 - Expand automated example tests so regressions are obvious.
-- Add source locations to runtime diagnostics so dynamic object mistakes point back to the `.szm` line.
+- Add source locations to runtime diagnostics so dynamic object mistakes point back to the `.skizm` line.
 - Decide whether object fields are dynamic by name or statically known by type.
 - Add useful game primitives before advanced language features.

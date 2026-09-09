@@ -1,4 +1,4 @@
--- simple.szm - A Simple Test
+-- simple.skizm - A Simple Test
 
 class Player
     var health
