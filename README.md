@@ -29,6 +29,7 @@ end
 ./build.sh           # build the compiler and runtime
 ./build.sh test      # build + run the full regression suite
 ./build.sh compile examples/game.skizm   # compile a .skizm file to C
+skizmc lib/vector.skizm lib/timer.skizm game.skizm -o game.c  # compile with the stdlib
 ```
 
 ## Layout
@@ -36,6 +37,7 @@ end
 - `compiler/` — lexer, parser, semantic checker, and C code generator (C11)
 - `runtime/` — object model, message dispatch, arena memory management
 - `examples/` — sample games: roguelike (`game.skizm`), autobattler, kingdom sim
+- `lib/` — standard library objects: `Vector`, `Timer`
 - `tests/` — regression tests with expected outputs (parser, errors, diagnostics)
 - `ROADMAP.md` — where the language is headed
 
