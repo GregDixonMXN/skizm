@@ -1,6 +1,6 @@
-# MyLanguage Roadmap
+# Skizm Roadmap
 
-MyLanguage is for building small indie games first. Treat every language and runtime choice as serving that goal.
+Skizm is for building small indie games first. Treat every language and runtime choice as serving that goal.
 
 ## Current Direction
 
@@ -30,6 +30,6 @@ MyLanguage is for building small indie games first. Treat every language and run
 ## Near-Term Priorities
 
 - Expand automated example tests so regressions are obvious.
-- Add source locations to runtime diagnostics so dynamic object mistakes point back to the `.yl` line.
+- Add source locations to runtime diagnostics so dynamic object mistakes point back to the `.szm` line.
 - Decide whether object fields are dynamic by name or statically known by type.
 - Add useful game primitives before advanced language features.
