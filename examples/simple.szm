@@ -1,4 +1,4 @@
--- simple.yl - A Simple Test
+-- simple.szm - A Simple Test
 
 class Player
     var health

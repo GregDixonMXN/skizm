@@ -1,4 +1,4 @@
--- minimal.yl - Minimal working test
+-- minimal.szm - Minimal working test
 
 class Player
     var health

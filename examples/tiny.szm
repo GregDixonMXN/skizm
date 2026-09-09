@@ -1,4 +1,4 @@
--- tiny.yl
+-- tiny.szm
 
 class Box
     var value

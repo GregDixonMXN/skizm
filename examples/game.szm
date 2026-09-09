@@ -1,4 +1,4 @@
--- game.yl - A Simple Roguelike Demo
+-- game.szm - A Simple Roguelike Demo
 -- This is Skizm. Clean. Readable. Powerful.
 
 class Player
