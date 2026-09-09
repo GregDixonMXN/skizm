@@ -1,0 +1,22 @@
+# Build output — everything under build/ is regenerable via ./build.sh
+build/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Compiled objects and binaries anywhere outside build/
+*.o
+*.a
+*.dylib
+*.so
+
+# Generated C output (regenerated from .yl sources by the compiler)
+/generated/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~

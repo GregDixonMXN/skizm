@@ -1,0 +1,9 @@
+=== AST ===
+method main do
+  var name = "Ada"
+  (send ("Hello, " + name) print)
+  var total = (send (2 + 3) to_string)
+  (send total print)
+  var roll = (send System random:max: (1 + 1) (4 * 2))
+  (send roll print)
+end

@@ -1,0 +1,165 @@
+
+class Unit
+    var name
+    var hp
+    var dmg
+
+    method set_name: n do self.name = n end
+    method set_hp: h do self.hp = h end
+    method set_dmg: d do self.dmg = d end
+
+    method get_name do return self.name end
+    method is_dead do return self.hp <= 0 end
+
+    method take_damage: amount do
+        self.hp = self.hp - amount
+    end
+
+    method attack: target do
+        var t_name = target get_name
+        var s_name = self get_name
+        var d_str = self.dmg to_string
+        
+        -- Assemble string safely, one step at a time
+        var msg = "[" + s_name
+        msg = msg + "] strikes ["
+        msg = msg + t_name
+        msg = msg + "] for "
+        msg = msg + d_str
+        msg = msg + " damage!"
+        
+        msg print
+        
+        target take_damage: self.dmg
+    end
+end
+
+class Squad
+    var units
+    var front_index
+    var total_units
+
+    method init do
+        self.units = Array new
+        self.front_index = 0
+        self.total_units = 0
+    end
+
+    method add_unit: unit do
+        self.units push: unit
+        self.total_units = self.total_units + 1
+    end
+
+    method get_front do
+        if self.front_index < self.total_units do
+            return self.units at: self.front_index
+        end
+        return nil
+    end
+
+    method remove_dead do
+        var front = self get_front
+        if front do
+            if front is_dead do
+                var fname = front get_name
+                
+                -- Assemble string safely
+                var msg = "*** " + fname
+                msg = msg + " has perished! ***"
+                msg print
+                
+                self.front_index = self.front_index + 1
+            end
+        end
+    end
+
+    method is_defeated do
+        return self.front_index >= self.total_units
+    end
+end
+
+method main do
+    System clear
+    "========================================" print
+    "      NEON CTHULHU: AUTOBATTLER         " print
+    "========================================" print
+
+    var player_squad = Squad new
+    player_squad init
+
+    var p1 = Unit new
+    p1 set_name: "Cyber-Cultist"
+    p1 set_hp: 50
+    p1 set_dmg: 15
+    player_squad add_unit: p1
+
+    var p2 = Unit new
+    p2 set_name: "Augmented Deep One"
+    p2 set_hp: 90
+    p2 set_dmg: 25
+    player_squad add_unit: p2
+
+    var enemy_squad = Squad new
+    enemy_squad init
+
+    var e1 = Unit new
+    e1 set_name: "Corp-Sec Drone"
+    e1 set_hp: 40
+    e1 set_dmg: 10
+    enemy_squad add_unit: e1
+
+    var e2 = Unit new
+    e2 set_name: "Mecha-Investigator"
+    e2 set_hp: 100
+    e2 set_dmg: 20
+    enemy_squad add_unit: e2
+
+    var round = 1
+    var battling = true
+
+    while battling do
+        "" print
+        
+        -- Assemble string safely
+        var r_str = round to_string
+        var r_msg = "--- ROUND " + r_str
+        r_msg = r_msg + " ---"
+        r_msg print
+
+        var p_front = player_squad get_front
+        var e_front = enemy_squad get_front
+
+        p_front attack: e_front
+        enemy_squad remove_dead
+
+        if enemy_squad is_defeated do
+            "" print
+            "VICTORY! The corporation falls." print
+            battling = false
+        end
+
+        if battling do
+            e_front = enemy_squad get_front 
+            e_front attack: p_front
+            player_squad remove_dead
+
+            if player_squad is_defeated do
+                "" print
+                "DEFEAT! The Elder Gods weep." print
+                battling = false
+            end
+        end
+
+        round = round + 1
+        
+        if battling do
+            "Press Enter for next round (or type 'quit' to flee)..." print
+            var cmd = System input
+            if cmd == "quit" do
+                "" print
+                "You have fled the battlefield." print
+                battling = false
+            end
+        end
+    end
+end

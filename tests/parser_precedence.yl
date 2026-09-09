@@ -1,0 +1,10 @@
+method main do
+    var name = "Ada"
+    "Hello, " + name print
+    
+    var total = 2 + 3 to_string
+    total print
+    
+    var roll = System random: 1 + 1 max: 4 * 2
+    roll print
+end

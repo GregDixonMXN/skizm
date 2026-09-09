@@ -1,0 +1,7 @@
+method main do
+    "Guard says \"halt\"" print
+    "Path C:\\Games\\YL" print
+    "Line one\nLine two" print
+    "Tabbed\tText" print
+    "Backslash: \\" print
+end

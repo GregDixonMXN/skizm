@@ -1,0 +1,21 @@
+-- minimal.yl - Minimal working test
+
+class Player
+    var health
+    
+    method hurt do
+        self.health = self.health - 10
+    end
+    
+    method show do
+        self.health print
+    end
+end
+
+method main do
+    var p = Player new
+    p.health = 100
+    p show
+    p hurt
+    p show
+end

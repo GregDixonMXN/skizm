@@ -1,0 +1,89 @@
+class Kingdom
+    var gold
+    var peasants
+    var army
+    var name
+    
+    method init do
+        self.gold = 100
+        self.peasants = 50
+        self.army = 10
+        self.name = "Aslona"
+    end
+    
+    method print_status do
+        System clear
+        "========================================" print
+        " KINGDOM OF " + self.name print
+        "========================================" print
+        " Gold:     " + self.gold to_string print
+        " Peasants: " + self.peasants to_string print
+        " Army:     " + self.army to_string print
+        "========================================" print
+    end
+    
+    method explore do
+        "Scouts report back..." print
+        var chance = System random: 1 max: 100
+        
+        if chance < 50 do
+            "They found nothing but rocks." print
+        end
+        
+        if chance >= 50 do
+            var loot = System random: 10 max: 50
+            var msg = "They found a hidden cache of "
+            msg = msg + loot to_string
+            msg = msg + " gold!"
+            msg print
+            self.gold = self.gold + loot
+        end
+    end
+    
+    method recruit do
+        if self.gold < 10 do
+            "Not enough gold, sire!" print
+        end
+        
+        if self.gold >= 10 do
+            self.gold = self.gold - 10
+            self.army = self.army + 1
+            "A new soldier joins the ranks." print
+        end
+    end
+end
+
+method main do
+    var k = Kingdom new
+    k init
+    var playing = true
+    
+    while playing do
+        k print_status
+        "" print
+        "1. Explore the lands" print
+        "2. Recruit soldier (10g)" print
+        "3. Quit" print
+        "" print
+        "Your command, Sire?" print
+        
+        var input = System input
+        var choice = input to_int
+        
+        if choice == 1 do
+            k explore
+        end
+        
+        if choice == 2 do
+            k recruit
+        end
+        
+        if choice == 3 do
+            playing = false
+        end
+        
+        -- Pause so the player can read the result
+        "Press Enter to continue..." print
+        System input
+    end
+end

@@ -1,0 +1,2 @@
+[line 2] Semantic error: Unknown variable 'missing'. Declare it with 'var' before using it.
+Compilation failed.

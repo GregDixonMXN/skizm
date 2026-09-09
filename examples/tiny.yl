@@ -1,0 +1,10 @@
+-- tiny.yl
+
+class Box
+    var value
+end
+
+method main do
+    var b = Box new
+    b.value = 42
+end

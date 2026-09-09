@@ -1,0 +1,3 @@
+method main do
+    System random: 1 max:
+end

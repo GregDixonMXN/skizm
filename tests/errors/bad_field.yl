@@ -1,0 +1,3 @@
+method main do
+    player. = 10
+end

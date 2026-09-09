@@ -1,0 +1,3 @@
+No method 'greet' (0 args) for class 'Player'. Did you mean 'greet:' (1 arg)?
+Runtime initialized with 1024 KB arena
+Runtime shut down.

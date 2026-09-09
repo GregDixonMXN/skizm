@@ -1,0 +1,4 @@
+[line 3, col 1] Error at 'end': Expected initializer expression for variable 'x' after '='.
+  end
+  ^
+Compilation failed.

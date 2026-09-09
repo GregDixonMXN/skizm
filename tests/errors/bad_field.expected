@@ -1,0 +1,4 @@
+[line 2, col 13] Error at '=': Expected field name after '.'. Use syntax like player.health.
+      player. = 10
+              ^
+Compilation failed.

@@ -1,0 +1,3 @@
+method main do
+    missing print
+end

@@ -1,0 +1,43 @@
+-- simple.yl - A Simple Test
+
+class Player
+    var health
+    var name
+    
+    method take_damage: amount do
+        self.health = self.health - amount
+        
+        if self.health <= 0 do
+            self die
+        end
+    end
+    
+    method die do
+        "Game Over!" print
+    end
+end
+
+method main do
+    "Creating player..." print
+    
+    var hero = Player new
+    hero.health = 100
+    hero.name = "Hero"
+    
+    "Initial health:" print
+    hero.health print
+    
+    "Taking 30 damage..." print
+    hero take_damage: 30
+    
+    "Current health:" print
+    hero.health print
+    
+    "Taking 80 more damage..." print
+    hero take_damage: 80
+    
+    "Final health:" print
+    hero.health print
+    
+    "Done!" print
+end
