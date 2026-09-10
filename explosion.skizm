@@ -1,0 +1,80 @@
+-- explosion.skizm - Proximity-fuse blast behavior for Topple.
+-- Exercises the last bridge pieces: multi-phase timing (fuse, then
+-- shockwave window), the blast host call, and self-destroy at the end.
+-- blast's three args arrive as set_radius:/set_power:/blast: sends,
+-- the same convention as spring and crate.
+
+class ToppleHost
+    method touching: id do
+        return false
+    end
+
+    method set_radius: r do
+        return 0
+    end
+
+    method set_power: p do
+        return 0
+    end
+
+    method blast: id do
+        return 0
+    end
+
+    method destroy: id do
+        return false
+    end
+end
+
+class Explosion
+    var lit
+    var radius
+    var power
+    var ctx_id
+    var host
+
+    method init do
+        self.lit = 0 - 1
+        self.radius = 220
+        self.power = 2400
+    end
+
+    method set_id: v do
+        self.ctx_id = v
+    end
+
+    method set_host: h do
+        self.host = h
+    end
+
+    method step: time do
+        var armed = self.lit >= 0
+        if armed do
+            var age = time - self.lit
+            if age >= 0.6 do
+                self.host set_radius: self.radius
+                self.host set_power: self.power
+                self.host blast: self.ctx_id
+            end
+            if age >= 0.9 do
+                self.host destroy: self.ctx_id
+            end
+        end
+        var cold = self.lit < 0
+        if cold do
+            var touched = self.host touching: self.ctx_id
+            if touched do
+                self.lit = time
+            end
+        end
+    end
+end
+
+method main do
+    var host = ToppleHost new
+    var bomb = Explosion new
+    bomb set_id: "bomb1"
+    bomb set_host: host
+    bomb step: 0
+    "explosion ok" print
+end
