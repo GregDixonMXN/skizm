@@ -1,0 +1,65 @@
+-- crate.skizm - Breakable obstacle behavior for Topple.
+-- Stretches the bridge further than spring: instance state (hp,
+-- last_hit), time arithmetic for the hit cooldown, tag-filtered touch,
+-- and destroy. Convention (single-keyword methods only): multi-arg
+-- host calls arrive as set_* + action sends (set_tag:/touching_tagged:,
+-- like spring's set_power:/bounce:).
+
+class ToppleHost
+    method set_tag: t do
+        return 0
+    end
+
+    method touching_tagged: id do
+        return false
+    end
+
+    method destroy: id do
+        return false
+    end
+end
+
+class Crate
+    var hp
+    var last_hit
+    var ctx_id
+    var host
+
+    method init do
+        self.hp = 3
+        self.last_hit = 0 - 0.5
+    end
+
+    method set_id: v do
+        self.ctx_id = v
+    end
+
+    method set_host: h do
+        self.host = h
+    end
+
+    method step: time do
+        self.host set_tag: "player_move"
+        var hit = self.host touching_tagged: self.ctx_id
+        if hit do
+            var since = time - self.last_hit
+            if since >= 0.5 do
+                self.last_hit = time
+                self.hp = self.hp - 1
+                if self.hp <= 0 do
+                    self.host destroy: self.ctx_id
+                end
+            end
+        end
+    end
+end
+
+method main do
+    var host = ToppleHost new
+    var box = Crate new
+    box set_id: "crate1"
+    box set_host: host
+    box step: 0
+    box step: 1
+    "crate ok" print
+end
