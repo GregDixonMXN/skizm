@@ -1,0 +1,58 @@
+-- spring.skizm - Bounce pad behavior for Topple.
+-- ToppleHost is a stub of the engine host vtable: in Topple PLAY
+-- these selectors are answered by the engine; here they answer safe
+-- defaults so the behavior runs standalone. A future skizmc backend
+-- implements this class for real and emits the step proc.
+--
+-- Language finding: methods take ONE keyword arg, so the step context
+-- (ctx, id, host) arrives via setters, not one step:with:using: send.
+-- Multi-keyword methods would collapse this boilerplate.
+
+class ToppleHost
+    method touching: id do
+        return false
+    end
+
+    method set_power: p do
+        return 0
+    end
+
+    method bounce: id do
+        return 0
+    end
+end
+
+class SpringPad
+    var power
+    var ctx_id
+    var host
+
+    method init do
+        self.power = 900
+    end
+
+    method set_id: v do
+        self.ctx_id = v
+    end
+
+    method set_host: h do
+        self.host = h
+    end
+
+    method step: ctx do
+        var touched = self.host touching: self.ctx_id
+        if touched do
+            self.host set_power: self.power
+            self.host bounce: self.ctx_id
+        end
+    end
+end
+
+method main do
+    var host = ToppleHost new
+    var pad = SpringPad new
+    pad set_id: "pad1"
+    pad set_host: host
+    pad step: 0
+    "spring ok" print
+end
